@@ -76,6 +76,7 @@ PKGFUNC=0
 SPLITPKG=0
 PKGLIST=()
 SIGNPKG=''
+ARGV_OPTIONS=()
 
 # Forces the pkgver of the current PKGBUILD. Used by the fakeroot call
 # when dealing with svn/cvs/etc PKGBUILDs.
@@ -293,6 +294,16 @@ get_pkg_arch() {
 #          127 - not found
 ##
 check_option() {
+	in_opt_array "$1" ${ARGV_OPTIONS[@]}
+	case $? in
+		0) # assert enabled
+			[[ $2 = y ]]
+			return ;;
+		1) # assert disabled
+			[[ $2 = n ]]
+			return
+	esac
+
 	in_opt_array "$1" ${options[@]}
 	case $? in
 		0) # assert enabled
@@ -1970,6 +1981,7 @@ usage() {
 	printf -- "$(gettext "  -L, --log        Log package build process")\n"
 	printf -- "$(gettext "  -m, --nocolor    Disable colorized output messages")\n"
 	printf -- "$(gettext "  -o, --nobuild    Download and extract files only")\n"
+	printf -- "$(gettext "  -O <list>        Override makepkg.conf/PKGBUILD OPTIONS/options")\n"
 	printf -- "$(gettext "  -p <file>        Use an alternate build script (instead of '%s')")\n" "$BUILDSCRIPT"
 	printf -- "$(gettext "  -r, --rmdeps     Remove installed dependencies after a successful build")\n"
 	printf -- "$(gettext "  -R, --repackage  Repackage contents of the package without rebuilding")\n"
@@ -2019,7 +2031,7 @@ fi
 ARGLIST=("$@")
 
 # Parse Command Line Options.
-OPT_SHORT="AcdefFghiLmop:rRsSV"
+OPT_SHORT="AcdefFghiLmoO:p:rRsSV"
 OPT_LONG=('allsource' 'asroot' 'ignorearch' 'check' 'clean' 'nodeps'
           'noextract' 'force' 'forcever:' 'geninteg' 'help' 'holdver' 'skippgpcheck'
           'install' 'key:' 'log' 'nocolor' 'nobuild' 'nocheck' 'nosign' 'pkg:' 'rmdeps'
@@ -2063,6 +2075,7 @@ while true; do
 		--nocheck)        RUN_CHECK='n' ;;
 		--nosign)         SIGNPKG='n' ;;
 		-o|--nobuild)     NOBUILD=1 ;;
+		-O)               shift; IFS=, read -ra p <<<"$1"; ARGV_OPTIONS+=("${p[@]}"); unset p ;;
 		-p)               shift; BUILDFILE=$1 ;;
 		--pkg)            shift; IFS=, read -ra p <<<"$1"; PKGLIST+=("${p[@]}"); unset p ;;
 		-r|--rmdeps)      RMDEPS=1 ;;
