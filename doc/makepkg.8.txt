@@ -120,6 +120,11 @@ Options
 	'\--noextract' option if you wish to tweak the files in src/ before
 	building.
 
+*\-O* <list>::
+	Override options specified in `makepkg.conf` and `PKGBUILD`. Multiple
+	options should be comma separated in the list. This option can be
+	specified multiple times. Example list: '!strip,docs'.
+
 *-p* <buildscript>::
 	Read the package script `buildscript` instead of the `PKGBUILD` default;
 	see linkman:PKGBUILD[5].
